@@ -3,7 +3,7 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
-import Holy from "../components/Holy";
+
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState("");
@@ -40,7 +40,7 @@ export default function Home() {
     document.body.removeChild(a);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:Event) => {
     e.preventDefault();
 
     try {

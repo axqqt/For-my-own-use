@@ -3,6 +3,7 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
+import Holy from "../components/Holy";
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState("");
@@ -16,11 +17,11 @@ export default function Home() {
     setVideoUrl(e.target.value);
   };
 
-  const handleDownloadTypeChange = (e) => {
+  const handleDownloadTypeChange = (e : Event) => {
     setDownloadType(e.target.value);
   };
 
-  const handleDownload = (base64Data, fileType) => {
+  const handleDownload = (base64Data : any , fileType : any) => {
     const blob = base64toBlob(base64Data, `audio/${fileType}`); // Create a Blob object from base64 data
     const url = window.URL.createObjectURL(blob); // Create a URL for the Blob object
 
@@ -61,7 +62,7 @@ export default function Home() {
   };
 
   // Function to convert base64 to Blob object
-  const base64toBlob = (base64Data, contentType = "audio/mp3") => {
+  const base64toBlob = (base64Data : any , contentType = "audio/mp3") => {
     const sliceSize = 512;
     const byteCharacters = atob(base64Data);
     const byteArrays = [];
@@ -83,6 +84,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
+      <Holy/>
       <h1 className="text-3xl font-semibold mb-8">YouTube to Media Converter</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col space-y-2">

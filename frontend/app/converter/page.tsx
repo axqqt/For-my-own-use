@@ -84,7 +84,6 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <Holy/>
       <h1 className="text-3xl font-semibold mb-8">YouTube to Media Converter</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col space-y-2">

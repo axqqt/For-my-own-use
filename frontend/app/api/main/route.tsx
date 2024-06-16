@@ -1,5 +1,4 @@
-// pages/api/home/route.ts
-
+"use server"
 import fs from 'fs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -99,8 +98,8 @@ export const config = {
 // Next.js API route handler
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'GET') {
-        res.status(200).json({ message: 'GET request testing' });
-        return;
+        return res.status(200).json({ message: 'GET request testing' });
+
     }
 
     if (req.method === 'POST') {
@@ -163,6 +162,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
     } else {
         res.setHeader('Allow', ['POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+        res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 }

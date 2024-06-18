@@ -1,45 +1,56 @@
-"use server"
-// pages/api/generate-questions.js
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import formidable from 'formidable';
 
-import axios from 'axios';
-import { NextResponse, NextRequest } from 'next/server';
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
-export default async function handler(req, res) {
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+
+const handleFormUpload = (req) => {
+  return new Promise((resolve, reject) => {
+    const form = new formidable.IncomingForm();
+    form.uploadDir = './uploads';
+    form.keepExtensions = true;
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      resolve({ fields, files });
+    });
+  });
+};
+
+export default async (req, res) => {
   if (req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
-  }
-
-  const { prompt } = await NextRequest.body().asJson();
-
-  if (!prompt) {
-    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_KEY}`,
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: `Generate a complete questionnaire form based on the following prompt: ${prompt}`,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const { fields } = await handleFormUpload(req);
+    const { prompt } = fields;
 
-    const questions = response.data.choices[0].text.trim().split('\n');
-    return NextResponse.json({ questions });
-  } catch (error) {
-    console.error('Error generating questions:', error);
-    return NextResponse.json({ error: 'Failed to generate questions' }, { status: 500 });
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const genAIModel = await genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const result = await genAIModel.generateContent({ prompt });
+
+    if (!result || !result.response || typeof result.response.text !== 'string') {
+      throw new Error('Invalid response from API');
+    }
+
+    const response = result.response.text.trim();
+    if (!response) {
+      throw new Error('Empty response from API');
+    }
+
+    const questions = response.split('\n');
+
+    return res.status(200).json({ questions });
+  } catch (err) {
+    console.error('Error generating questions:', err);
+    return res.status(500).json({ error: `Failed to generate questions: ${err.message}` });
   }
-}
+};

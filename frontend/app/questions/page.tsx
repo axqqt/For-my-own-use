@@ -1,8 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
-import axios from "axios"
-import 'jspdf';
+import axios from 'axios';
 
 function QuestionnaireGenerator() {
   const [prompt, setPrompt] = useState('');
@@ -15,19 +14,17 @@ function QuestionnaireGenerator() {
     setError('');
     setQuestions([]);
     try {
-      const response = await axios.post('http://localhost:3000/api/questions', {
+      const response = await axios.post('/api/questions', { prompt }, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt })
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('Failed to generate questions');
       }
 
-      const data = await response.json();
-      setQuestions(data.questions);
+      setQuestions(response.data.questions);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -37,34 +34,34 @@ function QuestionnaireGenerator() {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.text("Generated Questions", 10, 10);
+    doc.text('Generated Questions', 10, 10);
     const rows = questions.map((question, index) => [index + 1, question]);
     doc.autoTable({
       head: [['#', 'Question']],
-      body: rows
+      body: rows,
     });
     doc.save('questions.pdf');
   };
 
   return (
-    <div className="container">
-      <h1>Questionnaire Generator</h1>
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4 text-center">Questionnaire Generator</h1>
       <textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="Enter a prompt"
-        className="textarea"
+        className="textarea textarea-bordered w-full mb-4"
       />
-      <button onClick={generateQuestions} className="button" disabled={loading}>
+      <button onClick={generateQuestions} className="btn btn-primary w-full mb-4" disabled={loading}>
         {loading ? 'Generating...' : 'Generate Questions'}
       </button>
-      {error && <p className="error">{error}</p>}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
       {questions.length > 0 && (
-        <div>
-          <h2>Generated Questions</h2>
-          <ul className="question-list">
+        <div className="card bg-base-100 shadow-lg p-4 mb-4">
+          <h2 className="text-xl font-bold mb-2">Generated Questions</h2>
+          <ul className="space-y-2">
             {questions.map((question, index) => (
-              <li key={index} className="question-item">
+              <li key={index}>
                 <textarea
                   value={question}
                   onChange={(e) => {
@@ -72,54 +69,14 @@ function QuestionnaireGenerator() {
                     newQuestions[index] = e.target.value;
                     setQuestions(newQuestions);
                   }}
-                  className="question-textarea"
+                  className="textarea textarea-bordered w-full"
                 />
               </li>
             ))}
           </ul>
-          <button onClick={exportToPDF} className="button">
-            Export to PDF
-          </button>
+          <button onClick={exportToPDF} className="btn btn-secondary mt-4">Export to PDF</button>
         </div>
       )}
-      <style jsx>{`
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-        .textarea {
-          width: 100%;
-          height: 100px;
-          margin-bottom: 20px;
-        }
-        .button {
-          padding: 10px 20px;
-          margin: 10px 0;
-          background-color: #0070f3;
-          color: white;
-          border: none;
-          cursor: pointer;
-        }
-        .button:disabled {
-          background-color: #ccc;
-          cursor: not-allowed;
-        }
-        .error {
-          color: red;
-        }
-        .question-list {
-          list-style-type: none;
-          padding: 0;
-        }
-        .question-item {
-          margin-bottom: 10px;
-        }
-        .question-textarea {
-          width: 100%;
-          height: 50px;
-        }
-      `}</style>
     </div>
   );
 }

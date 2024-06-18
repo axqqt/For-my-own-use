@@ -1,4 +1,6 @@
+// QuestionnaireGenerator.jsx
 "use client"
+
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import axios from 'axios';
@@ -9,22 +11,24 @@ function QuestionnaireGenerator() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const baseURL = "http://localhost:8000"; // Adjust this to your backend URL
+
   const generateQuestions = async () => {
     setLoading(true);
     setError('');
     setQuestions([]);
     try {
-      const response = await axios.post('/api/questions', { prompt }, {
+      const response = await axios.post(`${baseURL}/api/questions`, { prompt }, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      if (response.status !== 200) {
+      if (response.status === 200) {
+        setQuestions(response.data.questions);
+      } else {
         throw new Error('Failed to generate questions');
       }
-
-      setQuestions(response.data.questions);
     } catch (err) {
       setError(err.message);
     } finally {

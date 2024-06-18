@@ -129,6 +129,7 @@ app.post("/api/questions", handleFormUpload, async (req, res) => {
     }
 
     const response = result.response.text.trim();
+    console.log(response)
 
     if (!response) {
       throw new Error("Empty response from API");

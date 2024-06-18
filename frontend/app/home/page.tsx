@@ -1,7 +1,4 @@
 "use client"
-
-// pages/index.jsx
-
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -25,12 +22,12 @@ const Home = () => {
     try {
       const formData = new FormData();
       if (thumbnails) {
-        for (let i = 0; i < thumbnails.length; i++) {
-          formData.append('thumbnails', thumbnails[i]);
-        }
+        thumbnails.forEach((thumbnail) => {
+          formData.append('thumbnails', thumbnail);
+        });
       }
-      if (text) {
-        formData.append('text', text);
+      if (text.trim() !== '') {
+        formData.append('text', text.trim());
       }
       if (video) {
         formData.append('videos', video);
@@ -66,39 +63,48 @@ const Home = () => {
     setVideo(e.target.files[0]);
   };
 
+  const handleAutoGenerateChange = () => {
+    setAutoGenerate(!autoGenerate);
+  };
+
+  const handleOutcomeCountChange = (e) => {
+    const count = parseInt(e.target.value);
+    setOutcomeCount(isNaN(count) ? 1 : count);
+  };
+
   return (
     <div className="container">
-      <h1>Questionnaire Generator</h1>
       <form onSubmit={handleFormSubmit}>
-        <div>
+        <div className="form-group">
           <label htmlFor="thumbnails">Upload Thumbnails:</label>
           <input type="file" id="thumbnails" name="thumbnails" multiple onChange={handleFileChange} />
         </div>
-        <div>
+        <div className="form-group">
           <label htmlFor="text">Text Script:</label>
           <textarea id="text" name="text" value={text} onChange={handleTextChange} />
         </div>
-        <div>
+        <div className="form-group">
           <label htmlFor="video">Upload Video:</label>
           <input type="file" id="video" name="videos" onChange={handleVideoChange} />
         </div>
-        <div>
+        <div className="form-group">
           <label htmlFor="autoGenerate">Auto Generate Outcomes:</label>
-          <input type="checkbox" id="autoGenerate" name="autoGenerate" checked={autoGenerate} onChange={() => setAutoGenerate(!autoGenerate)} />
+          <input type="checkbox" id="autoGenerate" name="autoGenerate" checked={autoGenerate} onChange={handleAutoGenerateChange} />
         </div>
         {autoGenerate && (
-          <div>
+          <div className="form-group">
             <label htmlFor="outcomeCount">Number of Outcomes:</label>
-            <input type="number" id="outcomeCount" name="outcomeCount" value={outcomeCount} onChange={(e) => setOutcomeCount(parseInt(e.target.value))} />
+            <input type="number" id="outcomeCount" name="outcomeCount" value={outcomeCount} onChange={handleOutcomeCountChange} />
           </div>
         )}
-        <button type="submit" disabled={loading}>Submit</button>
+        <button type="submit" className="btn-submit" disabled={loading}>
+          {loading ? 'Submitting...' : 'Submit'}
+        </button>
       </form>
 
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
+      {error && <p className="error-msg">Error: {error}</p>}
       {results && (
-        <div>
+        <div className="results">
           <h2>Results:</h2>
           <pre>{JSON.stringify(results, null, 2)}</pre>
         </div>

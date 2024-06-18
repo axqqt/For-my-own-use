@@ -1,11 +1,18 @@
-const axios = require('axios');
-const { NextResponse, NextRequest } = require('next/server');
+"use server"
+// pages/api/generate-questions.js
 
-export async function POST(req, res) {
-  const { prompt } = req.body;
+import axios from 'axios';
+import { NextResponse, NextRequest } from 'next/server';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  const { prompt } = await NextRequest.body().asJson();
 
   if (!prompt) {
-    return res.json({ error: 'Prompt is required' });
+    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
   }
 
   try {
@@ -30,15 +37,9 @@ export async function POST(req, res) {
     );
 
     const questions = response.data.choices[0].text.trim().split('\n');
-    return res.json(questions);
+    return NextResponse.json({ questions });
   } catch (error) {
-    console.error('Error generating questions:', error.message);
-    return res.status(500).json({ error: 'Failed to generate questions' });
+    console.error('Error generating questions:', error);
+    return NextResponse.json({ error: 'Failed to generate questions' }, { status: 500 });
   }
 }
-
-export function GET(req, res) {
-  return res.json({ Alert: 'Get request test' });
-}
-
-

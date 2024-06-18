@@ -1,15 +1,36 @@
 "use client"
-// components/QuestionnaireForm.js
-
 import React, { useState } from 'react';
 import axios from 'axios';
+import { auth, provider } from '../firebase'; // Path to your firebase.js
 
 const QuestionnaireForm = () => {
   const [prompt, setPrompt] = useState('');
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState('');
   const [formUrl, setFormUrl] = useState('');
+  const [user, setUser] = useState(null);
 
+  // Firebase Google Sign-in
+  const handleSignIn = async () => {
+    try {
+      const result = await auth.signInWithPopup(provider);
+      setUser(result.user);
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+    }
+  };
+
+  // Firebase Sign-out
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -26,6 +47,7 @@ const QuestionnaireForm = () => {
     }
   };
 
+  // Create Google Form using API
   const createGoogleForm = async (questions) => {
     try {
       const formData = {
@@ -52,6 +74,17 @@ const QuestionnaireForm = () => {
   return (
     <div>
       <h1>Generate Questionnaire</h1>
+
+      {/* Display user info or sign-in button */}
+      {user ? (
+        <div>
+          <p>Signed in as: {user.displayName}</p>
+          <button onClick={handleSignOut}>Sign out</button>
+        </div>
+      ) : (
+        <button onClick={handleSignIn}>Sign in with Google</button>
+      )}
+
       <form onSubmit={handleSubmit}>
         <label htmlFor="prompt">Enter a prompt:</label><br />
         <input

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // pages/index.js
 "use client"
 import React, { useState } from "react";
